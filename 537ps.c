@@ -1,14 +1,25 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <stdbool.h>
+#include <unistd.h>
 #include "537ps.h"
 
 int main(int argc, char* argv[]) {
-	// // For debugging
-	// if(argc < 2)
-	// 	return -1;
+
+	// Set argument defaults
+	int pid = -1;
+	bool statebool = false;
+	bool userTime = true;
+	bool sysTime = false;
+	bool vMem = false;
+	bool comLine = true;
 
 	// Handle passed arguments
-
+	int opt;
+	while ((opt = getopt(argc, argv, "p:sUSvc")) != -1) {
+		printf("%c : ", opt);
+		printf("%s\n", optarg);
+	}
 
 	// Call ps function with all true values
 	// Replace when argument passing is accomplished
@@ -26,7 +37,7 @@ void printAll(bool state, bool userTime, bool sysTime, bool vMem, bool comLine) 
 }
 
 /**
- * pid is process ID to display and equals -1 to show all processes
+ * pid is process ID to display
  * state represents -s flag
  * userTime represents -U flag
  * sysTime represents -S flag
