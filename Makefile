@@ -10,3 +10,6 @@ $(OUTPUT): 537ps.o
 
 clean:
 	rm -f $(OUTPUT) *.o
+
+test:
+	./$(OUTPUT)
