@@ -42,11 +42,14 @@ void printAll(bool state, bool userTime, bool sysTime, bool vMem, bool comLine) 
 		printf("errors");
 	} else {
 		while ((entry = readdir(dir)) != NULL) {
-			printf("  %s\n", entry->d_name);
+			int folderValue = atoi(entry->d_name);
+			if(folderValue != 0 || entry->d_name[0] == '0') {
+				//Folder is numeric
+				printOne(folderValue, state, userTime, sysTime, vMem, comLine);
+			}
 		}
 		closedir(dir);
 	}
-	// Call printOne on each process
 }
 
 /**
@@ -59,5 +62,5 @@ void printAll(bool state, bool userTime, bool sysTime, bool vMem, bool comLine) 
 **/
 
 void printOne(int pid, bool state, bool userTime, bool sysTime, bool vMem, bool comLine) {
-
+	
 }
