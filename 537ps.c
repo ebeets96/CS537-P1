@@ -2,6 +2,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <string.h>
 #include "537ps.h"
 
 int main(int argc, char* argv[]) {
@@ -18,7 +19,7 @@ int main(int argc, char* argv[]) {
 
 	// Handle passed arguments
 	char opt;
-	while ((opt = getopt(argc, argv, "p:sUSvc")) != -1) {
+	while ((opt = getopt(argc, argv, "p:s::U::S::v::c::")) != -1) {
 		switch (opt) {
 			case 'p':
 				if (atoi(optarg) != 0) {
@@ -31,7 +32,9 @@ int main(int argc, char* argv[]) {
 				s = true;
 				break;
 			case 'U':
-				U = true;
+				if (optarg != NULL && strcmp(optarg, "-") == 0) {
+					U = false;
+				}
 				break;
 			case 'S':
 				S = true;
@@ -40,7 +43,9 @@ int main(int argc, char* argv[]) {
 				v = true;
 				break;
 			case 'c':
-				c = true;
+				if (optarg != NULL && strcmp(optarg, "-") == 0) {
+					c = false;
+				}
 				break;
 		}
 	}	
