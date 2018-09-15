@@ -64,8 +64,7 @@ void printAll(bool state, bool userTime, bool sysTime, bool vMem, bool comLine) 
 void printOne(char* pid, bool state, bool userTime, bool sysTime, bool vMem, bool comLine) {
 	// Attempt to read /proc/<pid>
 	FILE *fp;
-	char filename[50];
-	strcpy(filename, "/proc/");
+	char filename[50] = "/proc/";
 	strcat(filename, pid);
 	strcat(filename, "/stat");
 
@@ -74,33 +73,45 @@ void printOne(char* pid, bool state, bool userTime, bool sysTime, bool vMem, boo
 		printf("Couldn't open %s\n", filename);
 		return;
 	} else {
-		// Load line from stats file
-		char rawStats[400];
-		fgets(rawStats, 400, fp);
-	
-		// Split stats into array
-		char stats[400][400];
-		splitString(stats, rawStats, " ");
-		
-		// Print pid
-		printf("%s: ", pid);
-		
-		// Print status
-		printf("%s", stats[2]);
+		//Print PID
+		int stat_pid;
+		fscanf(fp, "%d ", &stat_pid);
+		printf("%d: ", stat_pid);
+
+		//Throw out comm variable
+		fscanf(fp, "%*s ");
+
+		//Print State
+		char stat_state;
+		fscanf(fp, "%c ", &stat_state);
+		printf("%c ", stat_state);
+
+		//Throw out more variables
+		fscanf(fp, "%*d %*d %*d %*d %*d %*u %*u %*u %*u %*u ");
+
+		//Print utime
+		unsigned long int utime;
+		fscanf(fp, "%lu ", &utime);
+		printf("utime=%lu ", utime);
+
+		//Print stime
+		unsigned long int stime;
+		fscanf(fp, "%lu ", &stime);
+		printf("stime=%lu", stime);
+
+		// Print new line
 		printf("\n");
-		// Split by ' ' delimeter
-		
 	}
 
 }
 
-void splitString(char* dest[], char *str, const char *delim) {
-	char *token;
-	token = strtok(str, delim);
-   	int index = 0;	
-	while(token != NULL) {
-		dest[index] = token;	
-		token = strtok(NULL, delim);
-		index++;
-	}
-}
+// void splitString(char* dest[], char *str, const char *delim) {
+// 	char *token;
+// 	token = strtok(str, delim);
+//    	int index = 0;
+// 	while(token != NULL) {
+// 		dest[index] = token;
+// 		token = strtok(NULL, delim);
+// 		index++;
+// 	}
+// }
