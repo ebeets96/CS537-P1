@@ -8,22 +8,7 @@
 #include "537ps.h"
 
 int main(int argc, char* argv[]) {
-
-	// Set argument defaults
-	int pid = -1;
-	bool statebool = false;
-	bool userTime = true;
-	bool sysTime = false;
-	bool vMem = false;
-	bool comLine = true;
-
 	// Handle passed arguments
-	int opt;
-	// while ((opt = getopt(argc, argv, "p:sUSvc")) != -1) {
-	// 	printf("%c : ", opt);
-	// 	printf("%s\n", optarg);
-	// }
-
 	// Call ps function with all true values
 	// Replace when argument passing is accomplished
 
@@ -62,56 +47,107 @@ void printAll(bool state, bool userTime, bool sysTime, bool vMem, bool comLine) 
 **/
 
 void printOne(char* pid, bool state, bool userTime, bool sysTime, bool vMem, bool comLine) {
-	// Attempt to read /proc/<pid>
-	FILE *fp;
-	char filename[50] = "/proc/";
-	strcat(filename, pid);
-	strcat(filename, "/stat");
+	// Load files required for ps command
+	char procRoot[20] = "/proc/";
+	strcat(procRoot, pid);
 
-	fp = fopen(filename, "r");
-	if(fp == NULL) {
-		printf("Couldn't open %s\n", filename);
+	char statusFilename[30];
+	strcpy(statusFilename, procRoot);
+	strcat(statusFilename, "/status");
+
+	char statFilename[30];
+	strcpy(statFilename, procRoot);
+	strcat(statFilename, "/stat");
+
+	char statmFilename[30];
+	strcpy(statmFilename, procRoot);
+	strcat(statmFilename, "/statm");
+
+	char cmdFilename[30];
+	strcpy(cmdFilename, procRoot);
+	strcat(cmdFilename, "/cmdline");
+
+	// FILE *statmFile = fopen(statmFilename, "r");
+	// FILE *cmdFile = fopen(cmdFilename, "r");
+
+	// Create variables for process data
+	char stat_state;
+	int stat_pid;
+	unsigned long int utime;
+	unsigned long int stime;
+	int vMemVal;
+	char command[100];
+
+	// Check status file
+	FILE *statusFile = fopen(statusFilename, "r");
+	if(statusFile == NULL) {
 		return;
 	} else {
-		//Print PID
-		int stat_pid;
-		fscanf(fp, "%d ", &stat_pid);
-		printf("%d: ", stat_pid);
+		//Read the user id
+	}
+	fclose(statusFile);
 
-		//Throw out comm variable
-		fscanf(fp, "%*s ");
+	// ---------------------- TODO --------------------------
+	// Check if user ID matches the process and return if not
+	// ---------------------- TODO --------------------------
 
-		//Print State
-		char stat_state;
-		fscanf(fp, "%c ", &stat_state);
-		printf("%c ", stat_state);
+	// Check stat file
+	FILE *statFile = fopen(statFilename, "r");
+	if(statFile == NULL) {
+		return;
+	} else {
+		// Load data from stat file
+		fscanf(statFile, "%d %*s %c %*d %*d %*d %*d %*d %*u %*u %*u %*u %*u %lu %lu ", &stat_pid, &stat_state, &utime, &stime);
+	}
+	fclose(statFile);
 
-		//Throw out more variables
-		fscanf(fp, "%*d %*d %*d %*d %*d %*u %*u %*u %*u %*u ");
+	// Check statm file
+	FILE *statmFile = fopen(statmFilename, "r");
+	if(statmFile == NULL) {
+		return;
+	} else {
+		// Load data from stat file
+		fscanf(statmFile, "%d", &vMemVal);
+	}
+	fclose(statmFile);
 
-		//Print utime
-		unsigned long int utime;
-		fscanf(fp, "%lu ", &utime);
-		printf("utime=%lu ", utime);
+	// Check cmdLine file
+	FILE *cmdFile = fopen(cmdFilename, "r");
+	if(cmdFile == NULL) {
+		return;
+	} else {
+		// Load data from stat file
+		fgets(command, sizeof(command), cmdFile);
+	}
+	fclose(cmdFile);
 
-		//Print stime
-		unsigned long int stime;
-		fscanf(fp, "%lu ", &stime);
-		printf("stime=%lu", stime);
+	// Print data
+	printf("%d:", stat_pid);
 
-		// Print new line
-		printf("\n");
+	if(state) {
+		printf(" %c", stat_state);
 	}
 
-}
+	if(userTime) {
+		printf(" utime=%lu", utime);
+	}
 
-// void splitString(char* dest[], char *str, const char *delim) {
-// 	char *token;
-// 	token = strtok(str, delim);
-//    	int index = 0;
-// 	while(token != NULL) {
-// 		dest[index] = token;
-// 		token = strtok(NULL, delim);
-// 		index++;
-// 	}
-// }
+	if(sysTime) {
+		printf(" stime=%lu", stime);
+	}
+
+	if(sysTime) {
+		printf(" stime=%lu", stime);
+	}
+
+	if(vMem) {
+		printf(" %d", vMemVal);
+	}
+
+	if(comLine) {
+		printf(" %s", command);
+	}
+
+	printf("\n");
+
+}
