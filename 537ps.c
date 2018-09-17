@@ -67,9 +67,6 @@ void printOne(char* pid, bool state, bool userTime, bool sysTime, bool vMem, boo
 	strcpy(cmdFilename, procRoot);
 	strcat(cmdFilename, "/cmdline");
 
-	// FILE *statmFile = fopen(statmFilename, "r");
-	// FILE *cmdFile = fopen(cmdFilename, "r");
-
 	// Create variables for process data
 	char stat_state;
 	int stat_pid;
