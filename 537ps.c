@@ -16,39 +16,76 @@ int main(int argc, char* argv[]) {
 	bool S = false;
 	bool v = false;
 	bool c = true;
+	bool validEntry = true;
 
 	// Handle passed arguments
 	char opt;
 	while ((opt = getopt(argc, argv, "p:s::U::S::v::c::")) != -1) {
 		switch (opt) {
 			case 'p':
-				if (atoi(optarg) != 0) {
+				if (optarg != NULL && atoi(optarg) != 0) {
 					pid = atoi(optarg);
 				} else {
-					// Argument is not an integer
+					printf("Must provide a PID integer\n");
+					validEntry = false;
 				}
 				break;
 			case 's':
-				s = true;
+				if (optarg != NULL && strcmp(optarg, "-") == 0) {
+					s = false;;
+				} else if (optarg == NULL) {
+					s = true;
+				} else {
+					printf("Usage: -s or -s-\n");
+					validEntry = false;
+				}
 				break;
 			case 'U':
 				if (optarg != NULL && strcmp(optarg, "-") == 0) {
 					U = false;
+				} else if (optarg == NULL) {
+					U = true;
+				} else {
+					printf("Usage: -U or -U-\n");
+					validEntry = false;
 				}
 				break;
 			case 'S':
-				S = true;
-				break;
+				if (optarg != NULL && strcmp(optarg, "-") == 0) {
+                                        S = false;
+                                } else if (optarg == NULL) {
+                                        S = true;
+                                } else {
+                                        printf("Usage: -U or -U-\n");
+					validEntry = false;
+                                }
+                                break;
 			case 'v':
-				v = true;
-				break;
+				if (optarg != NULL && strcmp(optarg, "-") == 0) {
+                                        v = false;
+                                } else if (optarg == NULL) {
+                                        v = true;
+                                } else {
+                                        printf("Usage: -v or -v-\n");
+					validEntry = false;
+                                }
+                                break;
 			case 'c':
 				if (optarg != NULL && strcmp(optarg, "-") == 0) {
-					c = false;
-				}
-				break;
+                                        c = false;
+                                } else if (optarg == NULL) {
+                                        c = true;
+                                } else {
+                                        printf("Usage: -c or -c-\n");
+					validEntry = false;
+                                }
+                                break;
 		}
 	}	
+
+	if (validEntry == false) {
+		return 1;
+	}
 
 	// For testing 
 	printf("pid: %d\n", pid);
@@ -58,7 +95,7 @@ int main(int argc, char* argv[]) {
 	printf("v flag: %s\n", v ? "true" : "false");
 	printf("c flag: %s\n", c ? "true" : "false");
 	//
-
+	
 	// Call ps function with all true values
 	// Replace when argument passing is accomplished
 
