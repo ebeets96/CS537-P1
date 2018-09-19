@@ -160,13 +160,24 @@ void printOne(char* pid, bool state, bool userTime, bool sysTime, bool vMem, boo
 	if(statusFile == NULL) {
 		return;
 	} else {
-		//Read the user id
+		// Get user id
+		int uid = getuid();
+		char statusLine[bufSize];
+		// Get to the correct line in the status file
+		for (int i = 0; i < 8; i++) {
+			if (fgets(statusLine, bufSize, statusFile) == NULL) {
+				return;
+			}
+		}
+		int process_uid;
+		// Get process uid
+		fscanf(statusFile, "%*s %d", &process_uid);
+		// Check that uid matches process uid
+		if (uid != process_uid) {
+			return;
+		}
 	}
 	fclose(statusFile);
-
-	// ---------------------- TODO --------------------------
-	// Check if user ID matches the process and return if not
-	// ---------------------- TODO --------------------------
 
 	// Check stat file
 	FILE *statFile = fopen(statFilename, "r");
@@ -213,9 +224,6 @@ void printOne(char* pid, bool state, bool userTime, bool sysTime, bool vMem, boo
 		printf(" stime=%lu", stime);
 	}
 
-	if(sysTime) {
-		printf(" stime=%lu", stime);
-	}
 
 	if(vMem) {
 		printf(" %d", vMemVal);
