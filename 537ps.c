@@ -7,12 +7,14 @@
 #include <sys/types.h>
 #include "537ps.h"
 
+const int bufSize = 100;
+
 int main(int argc, char* argv[]) {
 	// // For debugging
 	// if(argc < 2)
 	// 	return -1;
 
-	int pid = -1;
+	char* pid = "";
 	bool s = false;
 	bool U = true;
 	bool S = false;
@@ -89,13 +91,13 @@ int main(int argc, char* argv[]) {
 		return 1;
 	}
 
-	// For testing
-	printf("pid: %d\n", pid);
-	printf("s flag: %s\n", s ? "true" : "false");
-	printf("U flag: %s\n", U ? "true" : "false");
-	printf("S flag: %s\n", S ? "true" : "false");
-	printf("v flag: %s\n", v ? "true" : "false");
-	printf("c flag: %s\n", c ? "true" : "false");
+	if (pid == "") {
+		printAll(s, U, S, v, c);
+	} else {
+		printOne(pid, s, U, S, v, c);
+	}
+
+	return 0;
 }
 
 void printAll(bool state, bool userTime, bool sysTime, bool vMem, bool comLine) {
@@ -128,22 +130,23 @@ void printAll(bool state, bool userTime, bool sysTime, bool vMem, bool comLine) 
 
 void printOne(char* pid, bool state, bool userTime, bool sysTime, bool vMem, bool comLine) {
 	// Load files required for ps command
-	char procRoot[20] = "/proc/";
+	char procRoot[bufSize];
+	strcpy(procRoot, "/proc/");
 	strcat(procRoot, pid);
 
-	char statusFilename[30];
+	char statusFilename[bufSize];
 	strcpy(statusFilename, procRoot);
 	strcat(statusFilename, "/status");
 
-	char statFilename[30];
+	char statFilename[bufSize];
 	strcpy(statFilename, procRoot);
 	strcat(statFilename, "/stat");
 
-	char statmFilename[30];
+	char statmFilename[bufSize];
 	strcpy(statmFilename, procRoot);
 	strcat(statmFilename, "/statm");
 
-	char cmdFilename[30];
+	char cmdFilename[bufSize];
 	strcpy(cmdFilename, procRoot);
 	strcat(cmdFilename, "/cmdline");
 
@@ -153,7 +156,7 @@ void printOne(char* pid, bool state, bool userTime, bool sysTime, bool vMem, boo
 	unsigned long int utime;
 	unsigned long int stime;
 	int vMemVal;
-	char command[100];
+	char command[bufSize];
 
 	// Check status file
 	FILE *statusFile = fopen(statusFilename, "r");
@@ -224,13 +227,12 @@ void printOne(char* pid, bool state, bool userTime, bool sysTime, bool vMem, boo
 		printf(" stime=%lu", stime);
 	}
 
-
 	if(vMem) {
 		printf(" %d", vMemVal);
 	}
 
 	if(comLine) {
-		printf(" %s", command);
+		printf(" [%s]", command);
 	}
 
 	printf("\n");
