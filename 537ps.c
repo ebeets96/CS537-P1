@@ -28,7 +28,7 @@ int main(int argc, char* argv[]) {
 		switch (opt) {
 			case 'p':
 				if (optarg != NULL && atoi(optarg) != 0) {
-					pid = atoi(optarg);
+					pid = optarg;
 				} else {
 					printf("Must provide a PID integer\n");
 					validEntry = false;
@@ -91,7 +91,7 @@ int main(int argc, char* argv[]) {
 		return 1;
 	}
 
-	if (pid == "") {
+	if (strcmp(pid, "") == 0) {
 		printAll(s, U, S, v, c);
 	} else {
 		printOne(pid, s, U, S, v, c);
