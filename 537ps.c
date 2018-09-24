@@ -1,19 +1,101 @@
-#include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
 #include <unistd.h>
 #include <dirent.h>
+#include <stdio.h>
 #include <sys/types.h>
 #include "537ps.h"
 
-int main(int argc, char* argv[]) {
-	// Handle passed arguments
-	// Call ps function with all true values
-	// Replace when argument passing is accomplished
+const int bufSize = 100;
 
-	printAll(true, true, true, true, true);
-	// printOne(atoi(argv[1]), true, true, true, true, true); //Dummy pid for testing
+int main(int argc, char* argv[]) {
+	// // For debugging
+	// if(argc < 2)
+	// 	return -1;
+
+	char* pid = "";
+	bool s = false;
+	bool U = true;
+	bool S = false;
+	bool v = false;
+	bool c = true;
+	bool validEntry = true;
+
+	// Handle passed arguments
+	char opt;
+	while ((opt = getopt(argc, argv, "p:s::U::S::v::c::")) != -1) {
+		switch (opt) {
+			case 'p':
+				if (optarg != NULL && atoi(optarg) != 0) {
+					pid = optarg;
+				} else {
+					printf("Must provide a PID integer\n");
+					validEntry = false;
+				}
+				break;
+			case 's':
+				if (optarg != NULL && strcmp(optarg, "-") == 0) {
+					s = false;;
+				} else if (optarg == NULL) {
+					s = true;
+				} else {
+					printf("Usage: -s or -s-\n");
+					validEntry = false;
+				}
+				break;
+			case 'U':
+				if (optarg != NULL && strcmp(optarg, "-") == 0) {
+					U = false;
+				} else if (optarg == NULL) {
+					U = true;
+				} else {
+					printf("Usage: -U or -U-\n");
+					validEntry = false;
+				}
+				break;
+			case 'S':
+				if (optarg != NULL && strcmp(optarg, "-") == 0) {
+                                        S = false;
+                                } else if (optarg == NULL) {
+                                        S = true;
+                                } else {
+                                        printf("Usage: -U or -U-\n");
+					validEntry = false;
+                                }
+                                break;
+			case 'v':
+				if (optarg != NULL && strcmp(optarg, "-") == 0) {
+                                        v = false;
+                                } else if (optarg == NULL) {
+                                        v = true;
+                                } else {
+                                        printf("Usage: -v or -v-\n");
+					validEntry = false;
+                                }
+                                break;
+			case 'c':
+				if (optarg != NULL && strcmp(optarg, "-") == 0) {
+                                        c = false;
+                                } else if (optarg == NULL) {
+                                        c = true;
+                                } else {
+                                        printf("Usage: -c or -c-\n");
+					validEntry = false;
+                                }
+                                break;
+		}
+	}
+
+	if (validEntry == false) {
+		return 1;
+	}
+
+	if (strcmp(pid, "") == 0) {
+		printAll(s, U, S, v, c);
+	} else {
+		printOne(pid, s, U, S, v, c);
+	}
 
 	return 0;
 }
@@ -48,22 +130,23 @@ void printAll(bool state, bool userTime, bool sysTime, bool vMem, bool comLine) 
 
 void printOne(char* pid, bool state, bool userTime, bool sysTime, bool vMem, bool comLine) {
 	// Load files required for ps command
-	char procRoot[20] = "/proc/";
+	char procRoot[bufSize];
+	strcpy(procRoot, "/proc/");
 	strcat(procRoot, pid);
 
-	char statusFilename[30];
+	char statusFilename[bufSize];
 	strcpy(statusFilename, procRoot);
 	strcat(statusFilename, "/status");
 
-	char statFilename[30];
+	char statFilename[bufSize];
 	strcpy(statFilename, procRoot);
 	strcat(statFilename, "/stat");
 
-	char statmFilename[30];
+	char statmFilename[bufSize];
 	strcpy(statmFilename, procRoot);
 	strcat(statmFilename, "/statm");
 
-	char cmdFilename[30];
+	char cmdFilename[bufSize];
 	strcpy(cmdFilename, procRoot);
 	strcat(cmdFilename, "/cmdline");
 
@@ -73,20 +156,31 @@ void printOne(char* pid, bool state, bool userTime, bool sysTime, bool vMem, boo
 	unsigned long int utime;
 	unsigned long int stime;
 	int vMemVal;
-	char command[100];
+	char command[bufSize];
 
 	// Check status file
 	FILE *statusFile = fopen(statusFilename, "r");
 	if(statusFile == NULL) {
 		return;
 	} else {
-		//Read the user id
+		// Get user id
+		int uid = getuid();
+		char statusLine[bufSize];
+		// Get to the correct line in the status file
+		for (int i = 0; i < 8; i++) {
+			if (fgets(statusLine, bufSize, statusFile) == NULL) {
+				return;
+			}
+		}
+		int process_uid;
+		// Get process uid
+		fscanf(statusFile, "%*s %d", &process_uid);
+		// Check that uid matches process uid
+		if (uid != process_uid) {
+			return;
+		}
 	}
 	fclose(statusFile);
-
-	// ---------------------- TODO --------------------------
-	// Check if user ID matches the process and return if not
-	// ---------------------- TODO --------------------------
 
 	// Check stat file
 	FILE *statFile = fopen(statFilename, "r");
@@ -133,16 +227,12 @@ void printOne(char* pid, bool state, bool userTime, bool sysTime, bool vMem, boo
 		printf(" stime=%lu", stime);
 	}
 
-	if(sysTime) {
-		printf(" stime=%lu", stime);
-	}
-
 	if(vMem) {
 		printf(" %d", vMemVal);
 	}
 
 	if(comLine) {
-		printf(" %s", command);
+		printf(" [%s]", command);
 	}
 
 	printf("\n");
