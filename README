@@ -1,0 +1,7 @@
+Names: Eric Beets (beets) & Jack David (jackd)
+
+Within the directory of the C source files, type the command "make" to compile all files.  "make clean" can be used if there is a necessity to recompile everything.
+
+The program can be invoked using the "537ps" executable.  "./537ps" will print all user processes.  The p, s, U, S, v, c flags can be used as described on http://pages.cs.wisc.edu/~bart/537/programs/program1.html
+
+This program reads the status, stat, and statm files in the /proc/<pid>/ folder, parses them, and then outputs the data into the command line.
