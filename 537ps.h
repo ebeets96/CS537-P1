@@ -1,3 +1,7 @@
+/*
+ * Eric Beets (beets) & Jack David (jackd)
+*/
+
 #include <stdbool.h>
 
 int main(int argc, char* argv[]);

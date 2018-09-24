@@ -1,3 +1,7 @@
+/*
+ * Eric Beets (beets) & Jack David (jackd)
+*/
+
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>

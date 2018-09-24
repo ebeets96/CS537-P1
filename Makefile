@@ -1,3 +1,7 @@
+#
+# Eric Beets (beets) & Jack David (jackd)
+#
+
 CC=gcc
 FLAGS= -Wall
 OUTPUT = 537ps
