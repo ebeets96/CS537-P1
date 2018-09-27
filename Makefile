@@ -16,7 +16,7 @@ processPrinting.o: processPrinting.h processPrinting.c
 	$(CC) $(WFLAGS) -c $^
 
 clean:
-	rm -f $(EXE) *.o
+	rm -f $(EXE) *.o *.gch
 
 test:
 	./$(EXE)
