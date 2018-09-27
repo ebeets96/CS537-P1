@@ -14,9 +14,6 @@
 const int bufSize = 100;
 
 int main(int argc, char* argv[]) {
-	// // For debugging
-	// if(argc < 2)
-	// 	return -1;
 
 	char* pid = "";
 	bool s = false;
@@ -91,6 +88,11 @@ int main(int argc, char* argv[]) {
 		}
 	}
 
+	if (optind < argc) {
+                printf("Incorrect argument\n");
+                validEntry = false;
+        }
+
 	if (validEntry == false) {
 		return 1;
 	}
@@ -98,12 +100,15 @@ int main(int argc, char* argv[]) {
 	if (strcmp(pid, "") == 0) {
 		printAll(s, U, S, v, c);
 	} else {
-		printOne(pid, s, U, S, v, c);
+		if (!printOne(pid, s, U, S, v, c, false)) {
+			printf("No such process: %s\n", pid);
+		}
 	}
 
 	return 0;
 }
 
+// Prints all processes that belong to the user
 void printAll(bool state, bool userTime, bool sysTime, bool vMem, bool comLine) {
 	// Read folders in /proc directory
 	DIR *dir;
@@ -116,7 +121,7 @@ void printAll(bool state, bool userTime, bool sysTime, bool vMem, bool comLine) 
 			int folderValue = atoi(entry->d_name);
 			if(folderValue != 0 || entry->d_name[0] == '0') {
 				//Folder is numeric
-				printOne(entry->d_name, state, userTime, sysTime, vMem, comLine);
+				printOne(entry->d_name, state, userTime, sysTime, vMem, comLine, true);
 			}
 		}
 		closedir(dir);
@@ -124,15 +129,18 @@ void printAll(bool state, bool userTime, bool sysTime, bool vMem, bool comLine) 
 }
 
 /**
+ * prints one process
  * pid is process ID to display
  * state represents -s flag
  * userTime represents -U flag
  * sysTime represents -S flag
  * vMem represents -v flag
  * comLine represents -c flag
+ * returns true if printed successfully
+ * else returns false
 **/
 
-void printOne(char* pid, bool state, bool userTime, bool sysTime, bool vMem, bool comLine) {
+bool printOne(char* pid, bool state, bool userTime, bool sysTime, bool vMem, bool comLine, bool checkUser) {
 	// Load files required for ps command
 	char procRoot[bufSize];
 	strcpy(procRoot, "/proc/");
@@ -165,15 +173,15 @@ void printOne(char* pid, bool state, bool userTime, bool sysTime, bool vMem, boo
 	// Check status file
 	FILE *statusFile = fopen(statusFilename, "r");
 	if(statusFile == NULL) {
-		return;
-	} else {
+		return false;
+	} else if (checkUser) {
 		// Get user id
 		int uid = getuid();
 		char statusLine[bufSize];
 		// Get to the correct line in the status file
 		for (int i = 0; i < 8; i++) {
 			if (fgets(statusLine, bufSize, statusFile) == NULL) {
-				return;
+				return false;
 			}
 		}
 		int process_uid;
@@ -181,7 +189,7 @@ void printOne(char* pid, bool state, bool userTime, bool sysTime, bool vMem, boo
 		fscanf(statusFile, "%*s %d", &process_uid);
 		// Check that uid matches process uid
 		if (uid != process_uid) {
-			return;
+			return false;
 		}
 	}
 	fclose(statusFile);
@@ -189,7 +197,7 @@ void printOne(char* pid, bool state, bool userTime, bool sysTime, bool vMem, boo
 	// Check stat file
 	FILE *statFile = fopen(statFilename, "r");
 	if(statFile == NULL) {
-		return;
+		return false;
 	} else {
 		// Load data from stat file
 		fscanf(statFile, "%d %*s %c %*d %*d %*d %*d %*d %*u %*u %*u %*u %*u %lu %lu ", &stat_pid, &stat_state, &utime, &stime);
@@ -199,7 +207,7 @@ void printOne(char* pid, bool state, bool userTime, bool sysTime, bool vMem, boo
 	// Check statm file
 	FILE *statmFile = fopen(statmFilename, "r");
 	if(statmFile == NULL) {
-		return;
+		return false;
 	} else {
 		// Load data from stat file
 		fscanf(statmFile, "%d", &vMemVal);
@@ -209,7 +217,7 @@ void printOne(char* pid, bool state, bool userTime, bool sysTime, bool vMem, boo
 	// Check cmdLine file
 	FILE *cmdFile = fopen(cmdFilename, "r");
 	if(cmdFile == NULL) {
-		return;
+		return false;
 	} else {
 		// Load data from stat file
 		fgets(command, sizeof(command), cmdFile);
@@ -240,5 +248,6 @@ void printOne(char* pid, bool state, bool userTime, bool sysTime, bool vMem, boo
 	}
 
 	printf("\n");
-
+	
+	return true;
 }
